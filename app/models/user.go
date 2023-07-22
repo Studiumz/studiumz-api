@@ -12,10 +12,10 @@ type User struct {
 	Nickname  string            `json:"nickname"`
 	Email     string            `json:"email"`
 	ImageUrl  string            `json:"image_url"`
-	Gender    int               `json:"gender"` // iota instead
+	Gender    Gender            `json:"gender"`
 	Bio       string            `json:"bio"`
 	BirthDate date.Date         `json:"birth_date"`
-	Status    int               `json:"status"`
+	Status    int               `json:"status"` // iota
 	CreatedAt datetime.DateTime `json:"created_at"`
 	UpdatedAt datetime.DateTime `json:"updated_at"`
 	DeletedAt datetime.DateTime `json:"deleted_at"`
