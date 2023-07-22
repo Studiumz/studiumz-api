@@ -14,7 +14,7 @@ func findValidMatchById(ctx context.Context, tx pgx.Tx, id ulid.ULID) (match Mat
 
 	if err = pgxscan.Get(ctx, tx, &match, q, id); err != nil {
 		if err.Error() == "scanning one: no rows in result set" {
-			return match, err
+			return Match{}, nil
 		}
 
 		log.Err(err).Msg("Failed to find match by id")
@@ -86,7 +86,7 @@ func findUserIncomingMatches(ctx context.Context, tx pgx.Tx, userId ulid.ULID) (
 
 	if err = pgxscan.Get(ctx, tx, &matches, q, userId); err != nil {
 		if err.Error() == "scanning one: no rows in result set" {
-			return matches, err
+			return []Match{}, nil
 		}
 
 		log.Err(err).Msg("Failed to find incoming matches")
@@ -101,7 +101,7 @@ func findUserOutgoingMatches(ctx context.Context, tx pgx.Tx, userId ulid.ULID) (
 
 	if err = pgxscan.Get(ctx, tx, &matches, q, userId); err != nil {
 		if err.Error() == "scanning one: no rows in result set" {
-			return matches, err
+			return []Match{}, nil
 		}
 
 		log.Err(err).Msg("Failed to find outgoing matches")
