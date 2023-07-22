@@ -7,6 +7,28 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+func getChats(ctx context.Context, userId ulid.ULID) (chats []*ChatViewModel, err error) {
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		log.Err(err).Msg("Failed to get chats")
+		return
+	}
+
+	defer tx.Rollback(ctx)
+
+	chats, err = findChatsByUserId(ctx, tx, userId)
+	if err != nil {
+		return
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		log.Err(err).Msg("Failed to get chats")
+		return
+	}
+
+	return chats, nil
+}
+
 func createChat(ctx context.Context, firstUserId ulid.ULID, body createChatReq) (chat Chat, errs map[string]error, err error) {
 	secondUserId, err := validateChatUserId(body.SecondUserId)
 	if err != nil {
