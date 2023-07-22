@@ -9,12 +9,12 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func findMatchById(ctx context.Context, tx pgx.Tx, id ulid.ULID) (match Match, err error) {
-	q := "SELECT * FROM matches WHERE id = $1 AND deleted_at IS NULL;"
+func findValidMatchById(ctx context.Context, tx pgx.Tx, id ulid.ULID) (match Match, err error) {
+	q := "SELECT * FROM matches WHERE id = $1 AND deleted_at IS NULL AND status != 'SKIPPED';"
 
 	if err = pgxscan.Get(ctx, tx, &match, q, id); err != nil {
 		if err.Error() == "scanning one: no rows in result set" {
-			return match, err
+			return Match{}, nil
 		}
 
 		log.Err(err).Msg("Failed to find match by id")
@@ -24,7 +24,7 @@ func findMatchById(ctx context.Context, tx pgx.Tx, id ulid.ULID) (match Match, e
 	return match, nil
 }
 
-func saveNewMatch(ctx context.Context, tx pgx.Tx, m Match) (err error) {
+func saveNewMatchOrSkip(ctx context.Context, tx pgx.Tx, m Match) (err error) {
 	q := "INSERT INTO matches(id, matcher_id, matchee_id, status, invitation_message) VALUES($1, $2, $3, $4, $5);"
 
 	n, err := tx.Exec(ctx, q, m.Id, m.MatcherId, m.MatcheeId, m.Status, m.InvitationMessage)
@@ -44,7 +44,7 @@ func saveNewMatch(ctx context.Context, tx pgx.Tx, m Match) (err error) {
 }
 
 func updateMatchStatus(ctx context.Context, tx pgx.Tx, newStatus MatchStatus, id ulid.ULID) (err error) {
-	q := "UPDATE matches SET status = $1 where id = $2 AND deleted_at IS NULL;"
+	q := "UPDATE matches SET status = $1 where id = $2 AND deleted_at IS NULL AND status != 'SKIPPED';"
 
 	n, err := tx.Exec(ctx, q, newStatus, id)
 	if err != nil {
@@ -63,7 +63,7 @@ func updateMatchStatus(ctx context.Context, tx pgx.Tx, newStatus MatchStatus, id
 }
 
 func softDeleteMatch(ctx context.Context, tx pgx.Tx, id ulid.ULID) (err error) {
-	q := "UPDATE matches SET deleted_at = now() where id = $1;"
+	q := "UPDATE matches SET deleted_at = now() where id = $1 AND status != 'SKIPPED';"
 
 	n, err := tx.Exec(ctx, q, id)
 	if err != nil {
@@ -79,4 +79,34 @@ func softDeleteMatch(ctx context.Context, tx pgx.Tx, id ulid.ULID) (err error) {
 	}
 
 	return nil
+}
+
+func findUserIncomingMatches(ctx context.Context, tx pgx.Tx, userId ulid.ULID) (matches []Match, err error) {
+	q := "SELECT * FROM matches WHERE matchee_id = $1 AND deleted_at IS NULL AND status != 'SKIPPED';"
+
+	if err = pgxscan.Get(ctx, tx, &matches, q, userId); err != nil {
+		if err.Error() == "scanning one: no rows in result set" {
+			return []Match{}, nil
+		}
+
+		log.Err(err).Msg("Failed to find incoming matches")
+		return matches, err
+	}
+
+	return matches, nil
+}
+
+func findUserOutgoingMatches(ctx context.Context, tx pgx.Tx, userId ulid.ULID) (matches []Match, err error) {
+	q := "SELECT * FROM matches WHERE matchee_id = $1 AND deleted_at IS NULL AND status != 'SKIPPED';"
+
+	if err = pgxscan.Get(ctx, tx, &matches, q, userId); err != nil {
+		if err.Error() == "scanning one: no rows in result set" {
+			return []Match{}, nil
+		}
+
+		log.Err(err).Msg("Failed to find outgoing matches")
+		return matches, err
+	}
+
+	return matches, nil
 }
