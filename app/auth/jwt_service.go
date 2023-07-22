@@ -79,7 +79,7 @@ func generateUserAccessToken(userId string) (token string, err error) {
 			Issuer:    jwtIssuer,
 			Audience:  []string{jwtIssuer},
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour)),
 			ID:        ulid.Make().String(),
 			Subject:   userId,
 		},

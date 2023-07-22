@@ -7,6 +7,12 @@ func Router() *chi.Mux {
 
 	r.Post("/sign-in/google", signInWithGoogleHandler)
 
+	r.Group(func(r chi.Router) {
+		r.Use(UserAuthMiddleware)
+
+		r.Get("/userinfo", getUserInfoHandler)
+	})
+
 	if env == "local" || env == "development" {
 		r.Get("/test/firebase-id-token", getTestFirebaseIdTokenHandler)
 	}
