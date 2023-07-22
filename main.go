@@ -36,6 +36,11 @@ func main() {
 	r.MethodNotAllowed(app.MethodNotAllowed)
 	r.Get("/", app.Heartbeat)
 
+	// Normal routes
+	r.Group(func(r chi.Router) {
+		r.Mount("/auth", auth.Router())
+	})
+
 	log.Info().Msgf("Running server on port %s in %s mode...", c.Port, c.Env)
 	http.ListenAndServe(":"+c.Port, r)
 }

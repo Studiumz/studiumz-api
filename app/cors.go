@@ -18,7 +18,7 @@ func ConfigureCors(c Config) {
 		allowedMethods = append(allowedMethods, "HEAD", "TRACE")
 	}
 
-	allowedHeaders = []string{"Accept", "Authorization", "X-Forwarded-Authorization", "Content-Type", "X-Studiumz-Api-Key"}
+	allowedHeaders = []string{"Accept", "Authorization", "X-Forwarded-Authorization", "Content-Type", "X-Google-Id-Token", "X-Studiumz-Api-Key"}
 }
 
 func CorsMiddleware(h http.Handler) http.Handler {
