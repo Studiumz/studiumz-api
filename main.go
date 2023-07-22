@@ -5,6 +5,7 @@ import (
 
 	"github.com/Studiumz/studiumz-api/app"
 	"github.com/Studiumz/studiumz-api/app/auth"
+	"github.com/Studiumz/studiumz-api/app/recommendation"
 	"github.com/Studiumz/studiumz-api/db"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -17,6 +18,9 @@ func main() {
 	// App Configurations
 	app.ConfigureLogger(c)
 	app.ConfigureCors(c)
+	co := app.ConfigureCohere(c)
+
+	recommendation.InjectCohereClientAdapter(co)
 
 	// Configure Adapters and Dependency Injection
 	pool := db.CreateConnPool(c.DbDsn)

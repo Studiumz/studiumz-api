@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/cohere-ai/cohere-go"
 	"github.com/spf13/viper"
 )
 
@@ -24,6 +25,9 @@ type Config struct {
 	DbUser string `mapstructure:"DB_USER"`
 	DbPwd  string `mapstructure:"DB_PWD"`
 	DbDsn  string
+
+	CohereApiKey string `mapstructure:"COHERE_API_KEY"`
+	CohereClient *cohere.Client
 }
 
 func LoadConfig() (c Config) {
