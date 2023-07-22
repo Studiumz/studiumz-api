@@ -1,13 +1,10 @@
-package subject
+package auth
 
-import (
-	"github.com/Studiumz/studiumz-api/app/auth"
-	"github.com/go-chi/chi/v5"
-)
+import "github.com/go-chi/chi/v5"
 
-func Router() *chi.Mux {
+func SubjectRouter() *chi.Mux {
 	r := chi.NewRouter()
-	r.Use(auth.UserAuthMiddleware)
+	r.Use(UserAuthMiddleware)
 
 	// retrieve all subjects
 	r.Get("/", listSubjects)

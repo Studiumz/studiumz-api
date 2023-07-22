@@ -8,7 +8,6 @@ import (
 	"github.com/Studiumz/studiumz-api/app/chat"
 	"github.com/Studiumz/studiumz-api/app/match"
 	"github.com/Studiumz/studiumz-api/app/recommendation"
-	"github.com/Studiumz/studiumz-api/app/subject"
 	"github.com/Studiumz/studiumz-api/db"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -36,7 +35,6 @@ func main() {
 	chat.SetPool(pool)
 
 	match.SetPool(pool)
-	subject.SetPool(pool)
 
 	r := chi.NewRouter()
 
@@ -55,7 +53,8 @@ func main() {
 		r.Mount("/auth", auth.Router())
 		r.Mount("/chat", chat.Router())
 		r.Mount("/match", match.Router())
-		r.Mount("/subject", subject.Router())
+		r.Mount("/subject", auth.SubjectRouter())
+		r.Mount("/recommendation", recommendation.Router())
 	})
 
 	log.Info().Msgf("Running server on port %s in %s mode...", c.Port, c.Env)
