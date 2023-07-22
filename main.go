@@ -21,6 +21,7 @@ func main() {
 	// Configure Adapters and Dependency Injection
 	pool := db.CreateConnPool(c.DbDsn)
 
+	auth.SetEnv(c.Env)
 	auth.SetPool(pool)
 	auth.ConfigureFirebaseAdminSdk(c.FirebaseAdminServiceAccountFile)
 

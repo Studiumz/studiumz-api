@@ -13,6 +13,7 @@ import (
 )
 
 var (
+	env          string
 	pool         *pgxpool.Pool
 	firebaseApp  *firebase.App
 	firebaseAuth *auth.Client
@@ -20,6 +21,10 @@ var (
 	ErrNilPool                              = errors.New("Connection pool can't be nil")
 	ErrFirebaseAdminServiceAccountFileEmpty = errors.New("Firebase admin service account file can't be empty")
 )
+
+func SetEnv(environment string) {
+	env = environment
+}
 
 func SetPool(newPool *pgxpool.Pool) {
 	if newPool == nil {

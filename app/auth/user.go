@@ -29,12 +29,24 @@ type User struct {
 	DeletedAt null.Time   `json:"deleted_at"`
 }
 
-func NewUserWithOAuth(name, email null.String) (User, map[string]error) {
+func NewUserWithOAuth(fullName, email null.String) (User, map[string]error) {
+	errs := make(map[string]error)
+
+	if err := validateUserFullName(fullName.String); err != nil {
+		errs["full_name"] = err
+	}
+	if err := validateUserEmail(email.String); err != nil {
+		errs["email"] = err
+	}
+	if len(errs) != 0 {
+		return User{}, errs
+	}
+
 	id := ulid.Make()
 
 	return User{
 		Id:        id,
-		FullName:  name,
+		FullName:  fullName,
 		Email:     email,
 		Status:    ONBOARDING,
 		CreatedAt: time.Now(),
