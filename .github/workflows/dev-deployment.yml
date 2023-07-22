@@ -1,0 +1,64 @@
+name: Workflow for Development Environment Deployment
+
+on:
+  push:
+    branches:
+      - main
+      
+env:
+  DEV_CONFIG_ENV: ${{ secrets.DEV_CONFIG_ENV }}
+  DEV_FIREBASE_ADMIN_SERVICE_ACCOUNT_FILE: ${{ secrets.DEV_FIREBASE_ADMIN_SERVICE_ACCOUNT_FILE }}
+  DEV_TARGET_PLATFORMS: ${{ secrets.DEV_TARGET_PLATFORMS }}
+  REGISTRY: ${{ secrets.REGISTRY }}
+  REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
+  REGISTRY_IMAGE: ${{ secrets.REGISTRY_IMAGE }}
+  REGISTRY_ACCESS_TOKEN: ${{ secrets.REGISTRY_ACCESS_TOKEN }}
+      
+jobs:
+  Dev-Deployment:
+    name: Development Deployment
+    runs-on: ubuntu-22.04
+    
+    steps:
+      - name: Checkout Sources
+        uses: actions/checkout@v3
+      
+      - name: Sign in to Container Registry
+        run: echo $REGISTRY_ACCESS_TOKEN | docker login -u $REGISTRY_USER --password-stdin $REGISTRY
+      
+      - name: Build and Tag Image
+        run: |
+          docker build \
+            --platform $DEV_TARGET_PLATFORMS \
+            -t "$REGISTRY/$REGISTRY_IMAGE:${{ github.sha }}" .
+          docker tag "$REGISTRY/$REGISTRY_IMAGE:${{ github.sha }}" "$REGISTRY/$REGISTRY_IMAGE:latest"
+        
+      - name: Publish to Container Registry
+        run: docker push "$REGISTRY/$REGISTRY_IMAGE:latest"
+        
+      - name: Pull Latest Image and Run Container
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.DEV_SSH_HOST }}
+          username: ${{ secrets.DEV_SSH_USER }}
+          key: ${{ secrets.DEV_SSH_PRIVATEKEY }}
+          envs: DEV_CONFIG_ENV,DEV_FIREBASE_ADMIN_SERVICE_ACCOUNT_FILE,REGISTRY_ACCESS_TOKEN,REGISTRY_USER,REGISTRY,REGISTRY_IMAGE
+          script: |
+            mkdir -pv ./app/studiumz-api-dev
+            cd ./app/studiumz-api-dev
+            echo $DEV_CONFIG_ENV | tr ' ' '\n' > .env
+            mkdir -pv ./config
+            sudo chown :studiumz ./config && sudo chmod 0775 ./config && sudo chmod g+s ./config
+            echo $DEV_FIREBASE_ADMIN_SERVICE_ACCOUNT_FILE > config/firebase_svc_account.key.json
+            mkdir ./log
+            sudo chown :studiumz ./log && sudo chmod 0775 ./log && sudo chmod g+s ./log
+            echo $REGISTRY_ACCESS_TOKEN | docker login -u $REGISTRY_USER --password-stdin $REGISTRY
+            docker rm -f studiumz-api-dev
+            docker pull "$REGISTRY/$REGISTRY_IMAGE:latest"
+            docker run -d --name studiumz-api-dev \
+              --restart always \
+              -v "$(pwd)/.env:/app/studiumz-api/.env:ro" \
+              -v "$(pwd)/log:/app/studiumz-api/log:z" \
+              -v "$(pwd)/config:/app/studiumz-api/config:z" \
+              -p "8080:8080" \
+              "$REGISTRY/$REGISTRY_IMAGE:latest"
