@@ -9,6 +9,36 @@ import (
 	"github.com/Studiumz/studiumz-api/app/auth"
 )
 
+func getIncoming(w http.ResponseWriter, r *http.Request) {
+	user, ok := r.Context().Value(auth.UserInfoCtx).(auth.User)
+	if !ok {
+		app.WriteHttpError(w, http.StatusUnauthorized, auth.ErrInvalidAccessToken)
+		return
+	}
+
+	matches, err := getUserIncoming(user.Id)
+	if err != nil {
+		app.WriteHttpError(w, http.StatusInternalServerError, errors.New("could not get your incoming requests"))
+		return
+	}
+	app.WriteHttpBodyJson(w, http.StatusOK, map[string]interface{}{"data": matches})
+}
+
+func getOutgoing(w http.ResponseWriter, r *http.Request) {
+	user, ok := r.Context().Value(auth.UserInfoCtx).(auth.User)
+	if !ok {
+		app.WriteHttpError(w, http.StatusUnauthorized, auth.ErrInvalidAccessToken)
+		return
+	}
+
+	matches, err := getUserOutgoing(user.Id)
+	if err != nil {
+		app.WriteHttpError(w, http.StatusInternalServerError, errors.New("could not get your incoming requests"))
+		return
+	}
+	app.WriteHttpBodyJson(w, http.StatusOK, map[string]interface{}{"data": matches})
+}
+
 func newMatch(w http.ResponseWriter, r *http.Request) {
 	user, ok := r.Context().Value(auth.UserInfoCtx).(auth.User)
 	if !ok {
@@ -29,6 +59,21 @@ func newMatch(w http.ResponseWriter, r *http.Request) {
 		app.WriteHttpError(w, http.StatusInternalServerError, ErrFailToUpdateMatch)
 	}
 	app.WriteHttpBodyJson(w, http.StatusOK, map[string]string{"message": "Match request accepted"})
+}
+
+func newSkip(w http.ResponseWriter, r *http.Request) {
+	user, ok := r.Context().Value(auth.UserInfoCtx).(auth.User)
+	if !ok {
+		app.WriteHttpError(w, http.StatusUnauthorized, auth.ErrInvalidAccessToken)
+		return
+	}
+
+	matcheeId := r.URL.Query().Get("matchee_id")
+	err := createNewSkip(matcheeId, user)
+	if err != nil {
+		app.WriteHttpError(w, http.StatusInternalServerError, ErrFailToUpdateMatch)
+	}
+	app.WriteHttpBodyJson(w, http.StatusOK, map[string]string{"message": "skip success"})
 }
 
 func acceptIncoming(w http.ResponseWriter, r *http.Request) {
