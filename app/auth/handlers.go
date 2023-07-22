@@ -6,6 +6,16 @@ import (
 	"github.com/Studiumz/studiumz-api/app"
 )
 
+func getUserInfoHandler(w http.ResponseWriter, r *http.Request) {
+	user, ok := r.Context().Value(UserInfoCtx).(User)
+	if !ok {
+		app.WriteHttpError(w, http.StatusUnauthorized, ErrInvalidAccessToken)
+		return
+	}
+
+	app.WriteHttpBodyJson(w, http.StatusOK, user)
+}
+
 func getTestFirebaseIdTokenHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

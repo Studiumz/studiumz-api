@@ -28,6 +28,7 @@ func main() {
 	auth.SetEnv(c.Env)
 	auth.SetPool(pool)
 	auth.ConfigureFirebaseAdminSdk(c.FirebaseAdminServiceAccountFile)
+	auth.ConfigureJWTProperties(c.StudiumzJwtIssuer, c.StudiumzJwtAccessTokenSecret)
 
 	r := chi.NewRouter()
 

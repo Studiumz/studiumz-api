@@ -13,13 +13,17 @@ import (
 )
 
 var (
-	env          string
-	pool         *pgxpool.Pool
-	firebaseApp  *firebase.App
-	firebaseAuth *auth.Client
+	env                  string
+	pool                 *pgxpool.Pool
+	firebaseApp          *firebase.App
+	firebaseAuth         *auth.Client
+	jwtIssuer            string
+	jwtAccessTokenSecret []byte
 
 	ErrNilPool                              = errors.New("Connection pool can't be nil")
 	ErrFirebaseAdminServiceAccountFileEmpty = errors.New("Firebase admin service account file can't be empty")
+	ErrJwtIssuerEmpty                       = errors.New("JWT issuer can't be empty")
+	ErrJWTAccessTokenSecretEmpty            = errors.New("JWT access token secret can't be empty")
 )
 
 func SetEnv(environment string) {
@@ -56,4 +60,19 @@ func ConfigureFirebaseAdminSdk(serviceAccountFile string) {
 	}
 
 	firebaseAuth = auth
+}
+
+func ConfigureJWTProperties(issuer, accessTokenSecret string) {
+	issuer = strings.TrimSpace(issuer)
+	if len(issuer) == 0 {
+		log.Fatal().Err(ErrJwtIssuerEmpty).Msg("Failed to configure JWT properties")
+	}
+
+	accessTokenSecret = strings.TrimSpace(accessTokenSecret)
+	if len(accessTokenSecret) == 0 {
+		log.Fatal().Err(ErrJWTAccessTokenSecretEmpty).Msg("Failed to configure JWT properties")
+	}
+
+	jwtIssuer = issuer
+	jwtAccessTokenSecret = []byte(accessTokenSecret)
 }
