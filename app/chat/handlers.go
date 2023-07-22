@@ -10,6 +10,35 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+func getChatDetailHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	user, ok := r.Context().Value(auth.UserInfoCtx).(auth.User)
+	if !ok {
+		app.WriteHttpError(w, http.StatusUnauthorized, auth.ErrInvalidAccessToken)
+		return
+	}
+
+	userId := user.Id
+	chatId := chi.URLParam(r, "chatId")
+
+	chatDetail, err := getChatDetail(ctx, userId, chatId)
+	if err != nil {
+		switch {
+		case errors.As(err, &ErrInvalidChatId):
+			app.WriteHttpError(w, http.StatusBadRequest, err)
+		case errors.Is(err, ErrChatDoesNotExist):
+			app.WriteHttpError(w, http.StatusNotFound, err)
+		default:
+			app.WriteHttpInternalServerError(w)
+		}
+
+		return
+	}
+
+	app.WriteHttpBodyJson(w, http.StatusOK, chatDetail)
+}
+
 func createMessageHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

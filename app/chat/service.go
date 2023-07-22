@@ -7,6 +7,33 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+func getChatDetail(ctx context.Context, userId ulid.ULID, chatIdStr string) (chatDetail ChatDetail, err error) {
+	chatId, err := validateChatId(chatIdStr)
+	if err != nil {
+		return
+	}
+
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		log.Err(err).Msg("Failed to get chat detail")
+		return
+	}
+
+	defer tx.Rollback(ctx)
+
+	chatDetail, err = findChatDetail(ctx, tx, userId, chatId)
+	if err != nil {
+		return
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		log.Err(err).Msg("Failed to get chat detail")
+		return
+	}
+
+	return chatDetail, nil
+}
+
 func createMessage(ctx context.Context, userId ulid.ULID, chatIdStr, text string) (message Message, errs map[string]error, err error) {
 	chatId, err := validateChatId(chatIdStr)
 	if err != nil {
