@@ -5,6 +5,7 @@ import (
 
 	"github.com/Studiumz/studiumz-api/app"
 	"github.com/Studiumz/studiumz-api/app/auth"
+	"github.com/Studiumz/studiumz-api/app/chat"
 	"github.com/Studiumz/studiumz-api/app/match"
 	"github.com/Studiumz/studiumz-api/app/recommendation"
 	"github.com/Studiumz/studiumz-api/db"
@@ -31,6 +32,8 @@ func main() {
 	auth.ConfigureFirebaseAdminSdk(c.FirebaseAdminServiceAccountFile)
 	auth.ConfigureJWTProperties(c.StudiumzJwtIssuer, c.StudiumzJwtAccessTokenSecret)
 
+	chat.SetPool(pool)
+
 	match.SetPool(pool)
 
 	r := chi.NewRouter()
@@ -48,8 +51,7 @@ func main() {
 	// Normal routes
 	r.Group(func(r chi.Router) {
 		r.Mount("/auth", auth.Router())
-	})
-	r.Group(func(r chi.Router) {
+		r.Mount("/chat", chat.Router())
 		r.Mount("/match", match.Router())
 	})
 
