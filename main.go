@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/Studiumz/studiumz-api/app"
+	"github.com/Studiumz/studiumz-api/app/auth"
+	"github.com/Studiumz/studiumz-api/db"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog/log"
@@ -15,6 +17,11 @@ func main() {
 	// App Configurations
 	app.ConfigureLogger(c)
 	app.ConfigureCors(c)
+
+	// Configure Adapters and Dependency Injection
+	pool := db.CreateConnPool(c.DbDsn)
+
+	auth.SetPool(pool)
 
 	r := chi.NewRouter()
 
