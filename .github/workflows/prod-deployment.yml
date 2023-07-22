@@ -27,7 +27,7 @@ jobs:
       - name: Build and Tag Image
         run: |
           docker build \
-            --platform $DEV_TARGET_PLATFORMS \
+            --platform $TARGET_PLATFORMS \
             -t "$REGISTRY/$REGISTRY_IMAGE:${{ github.sha }}" .
           docker tag "$REGISTRY/$REGISTRY_IMAGE:${{ github.sha }}" "$REGISTRY/$REGISTRY_IMAGE:stable"
         
