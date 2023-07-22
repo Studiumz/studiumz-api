@@ -146,7 +146,7 @@ func withdrawMatch(m Match) (err error) {
 	return nil
 }
 
-func getUserIncoming(userId ulid.ULID) (matches []Match, err error) {
+func getUserIncoming(userId ulid.ULID) (matches []UserMatch, err error) {
 	ctx := context.Background()
 	tx, err := pool.Begin(ctx)
 	if err != nil {

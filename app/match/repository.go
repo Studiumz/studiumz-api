@@ -81,12 +81,16 @@ func softDeleteMatch(ctx context.Context, tx pgx.Tx, id ulid.ULID) (err error) {
 	return nil
 }
 
-func findUserIncomingMatches(ctx context.Context, tx pgx.Tx, userId ulid.ULID) (matches []Match, err error) {
-	q := "SELECT * FROM matches WHERE matchee_id = $1 AND deleted_at IS NULL AND status != 'SKIPPED';"
+func findUserIncomingMatches(ctx context.Context, tx pgx.Tx, userId ulid.ULID) (matches []UserMatch, err error) {
+	q := `SELECT * 
+	FROM matches m JOIN user u ON m.matcher_id = u.id
+	WHERE m.matchee_id = $1 
+		AND m.deleted_at IS NULL 
+		AND m.status != 'SKIPPED';`
 
 	if err = pgxscan.Select(ctx, tx, &matches, q, userId); err != nil {
 		if err.Error() == "scanning one: no rows in result set" {
-			return []Match{}, nil
+			return []UserMatch{}, nil
 		}
 
 		log.Err(err).Msg("Failed to find incoming matches")

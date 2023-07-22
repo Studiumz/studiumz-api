@@ -142,9 +142,9 @@ func filterUnmatchedUsers(ctx context.Context, tx pgx.Tx, user User) (filteredUs
 			SELECT matcher_id FROM matches WHERE deleted_at IS NULL AND matchee_id = $1
 			UNION
 			SELECT matchee_id FROM matches WHERE deleted_at IS NULL AND matcher_id = $1
-		);
+		) AND id != $1;
 	`
-	err = pgxscan.Get(ctx, tx, &filteredUsers, q, user.Id)
+	err = pgxscan.Select(ctx, tx, &filteredUsers, q, user.Id)
 	if err != nil {
 		log.Err(err).Msg("Failed to filter unmatched users")
 		return
