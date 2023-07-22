@@ -9,7 +9,7 @@ func Router() *chi.Mux {
 
 	r.Group(func(r chi.Router) {
 		r.Use(UserAuthMiddleware)
-
+		r.Post("/onboarding", onboarding)
 		r.Get("/userinfo", getUserInfoHandler)
 	})
 

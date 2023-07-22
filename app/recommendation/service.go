@@ -26,6 +26,8 @@ func getCosineSimilarity(embeddingA []float64, embeddingB []float64) float64 {
 }
 
 func CreateRecommendation(currentUser auth.User) (recommendedUsers []ScoredUser, err error) {
+	recommendedUsers = []ScoredUser{}
+
 	filteredUsers, err := auth.FilterUnmatched(currentUser)
 	if err != nil {
 		return
@@ -42,13 +44,13 @@ func CreateRecommendation(currentUser auth.User) (recommendedUsers []ScoredUser,
 	}
 
 	// get similarity and append to recommendedUsers
-	for i, embedding := range res.Embeddings[:len(res.Embeddings)-1] {
+	for i, embedding := range res.Embeddings[1 : len(res.Embeddings)-1] {
 		// limit recommendations to max batch size
-		if i == MAX_RECOMMENDATION_BATCH_SIZE {
+		if i == MAX_RECOMMENDATION_BATCH_SIZE || i == len(filteredUsers) {
 			return
 		}
 		score := getCosineSimilarity(res.Embeddings[0], embedding)
-		recommendedUsers = append(recommendedUsers, ScoredUser{score, filteredUsers[i+1]})
+		recommendedUsers = append(recommendedUsers, ScoredUser{score, filteredUsers[i]})
 	}
 
 	return
