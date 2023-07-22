@@ -5,6 +5,7 @@ import (
 
 	"github.com/Studiumz/studiumz-api/app"
 	"github.com/Studiumz/studiumz-api/app/auth"
+	"github.com/Studiumz/studiumz-api/app/match"
 	"github.com/Studiumz/studiumz-api/app/recommendation"
 	"github.com/Studiumz/studiumz-api/db"
 	"github.com/go-chi/chi/v5"
@@ -30,6 +31,8 @@ func main() {
 	auth.ConfigureFirebaseAdminSdk(c.FirebaseAdminServiceAccountFile)
 	auth.ConfigureJWTProperties(c.StudiumzJwtIssuer, c.StudiumzJwtAccessTokenSecret)
 
+	match.SetPool(pool)
+
 	r := chi.NewRouter()
 
 	// Global middlewares
@@ -45,6 +48,9 @@ func main() {
 	// Normal routes
 	r.Group(func(r chi.Router) {
 		r.Mount("/auth", auth.Router())
+	})
+	r.Group(func(r chi.Router) {
+		r.Mount("/match", match.Router())
 	})
 
 	log.Info().Msgf("Running server on port %s in %s mode...", c.Port, c.Env)
