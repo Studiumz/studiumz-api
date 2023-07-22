@@ -7,6 +7,7 @@ import (
 	"github.com/Studiumz/studiumz-api/app/auth"
 	"github.com/Studiumz/studiumz-api/app/match"
 	"github.com/Studiumz/studiumz-api/app/recommendation"
+	"github.com/Studiumz/studiumz-api/app/subject"
 	"github.com/Studiumz/studiumz-api/db"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -32,6 +33,7 @@ func main() {
 	auth.ConfigureJWTProperties(c.StudiumzJwtIssuer, c.StudiumzJwtAccessTokenSecret)
 
 	match.SetPool(pool)
+	subject.SetPool(pool)
 
 	r := chi.NewRouter()
 
@@ -51,6 +53,7 @@ func main() {
 	})
 	r.Group(func(r chi.Router) {
 		r.Mount("/match", match.Router())
+		r.Mount("/subject", subject.Router())
 	})
 
 	log.Info().Msgf("Running server on port %s in %s mode...", c.Port, c.Env)

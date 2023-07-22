@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS users_subjects;
+DROP TABLE IF EXISTS subjects;
