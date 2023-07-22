@@ -7,6 +7,38 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+func createMessage(ctx context.Context, userId ulid.ULID, chatIdStr, text string) (message Message, errs map[string]error, err error) {
+	chatId, err := validateChatId(chatIdStr)
+	if err != nil {
+		return
+	}
+
+	message, errs = NewMessage(chatId.String(), userId.String(), text)
+	if errs != nil {
+		return
+	}
+
+	tx, err := pool.Begin(ctx)
+	if err != nil {
+		log.Err(err).Msg("Failed to create message")
+		return
+	}
+
+	defer tx.Rollback(ctx)
+
+	message, err = saveMessage(ctx, tx, message)
+	if err != nil {
+		return
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		log.Err(err).Msg("Failed to create message")
+		return
+	}
+
+	return message, nil, nil
+}
+
 func getChats(ctx context.Context, userId ulid.ULID) (chats []*ChatViewModel, err error) {
 	tx, err := pool.Begin(ctx)
 	if err != nil {

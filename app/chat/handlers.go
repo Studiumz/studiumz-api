@@ -7,7 +7,47 @@ import (
 
 	"github.com/Studiumz/studiumz-api/app"
 	"github.com/Studiumz/studiumz-api/app/auth"
+	"github.com/go-chi/chi/v5"
 )
+
+func createMessageHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	user, ok := r.Context().Value(auth.UserInfoCtx).(auth.User)
+	if !ok {
+		app.WriteHttpError(w, http.StatusUnauthorized, auth.ErrInvalidAccessToken)
+		return
+	}
+
+	userId := user.Id
+	chatId := chi.URLParam(r, "chatId")
+
+	var body createMessageReq
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		app.WriteHttpError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	message, errs, err := createMessage(ctx, userId, chatId, body.Text)
+	if errs != nil {
+		app.WriteHttpErrors(w, http.StatusBadRequest, errs)
+		return
+	}
+	if err != nil {
+		switch {
+		case errors.As(err, &ErrInvalidChatId):
+			app.WriteHttpError(w, http.StatusBadRequest, err)
+		case errors.Is(err, ErrChatDoesNotExist):
+			app.WriteHttpError(w, http.StatusNotFound, err)
+		default:
+			app.WriteHttpInternalServerError(w)
+		}
+
+		return
+	}
+
+	app.WriteHttpBodyJson(w, http.StatusCreated, message)
+}
 
 func getChatsHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()

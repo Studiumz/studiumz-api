@@ -31,6 +31,9 @@ func NewMessage(chatIdStr, fromUserIdStr, text string) (Message, map[string]erro
 	if err := validateMessageText(text); err != nil {
 		errs["text"] = err
 	}
+	if len(errs) != 0 {
+		return Message{}, errs
+	}
 
 	return Message{
 		Id:         ulid.Make(),

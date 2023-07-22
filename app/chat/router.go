@@ -12,6 +12,7 @@ func Router() *chi.Mux {
 
 	r.Get("/", getChatsHandler)
 	r.Post("/create", createChatHandler)
+	r.Post("/{chatId}/create", createMessageHandler)
 
 	return r
 }

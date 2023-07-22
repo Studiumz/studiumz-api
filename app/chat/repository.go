@@ -16,6 +16,51 @@ var (
 	ErrChatAlreadyExists = errors.New("Chat already exists")
 )
 
+func saveMessage(ctx context.Context, tx pgx.Tx, message Message) (newMessage Message, err error) {
+	if _, err := findChatById(ctx, tx, message.ChatId); err != nil {
+		return message, err
+	}
+
+	q := `
+  INSERT INTO chat_messages(id, chat_id, from_user_id, text, created_at) VALUES
+  ($1, $2, $3, $4, $5)
+  ON CONFLICT (id)
+  DO NOTHING
+  RETURNING *
+  `
+	if err = pgxscan.Get(
+		ctx,
+		tx,
+		&newMessage,
+		q,
+		message.Id,
+		message.ChatId,
+		message.FromUserId,
+		message.Text,
+		message.CreatedAt,
+	); err != nil {
+		log.Err(err).Msg("Failed to save message")
+		return
+	}
+
+	return newMessage, nil
+}
+
+func findChatById(ctx context.Context, tx pgx.Tx, id ulid.ULID) (chat Chat, err error) {
+	q := "SELECT * FROM chats WHERE id = $1 AND deleted_at IS NULL"
+
+	if err = pgxscan.Get(ctx, tx, &chat, q, id); err != nil {
+		if err.Error() == "scanning one: no rows in result set" {
+			return Chat{}, ErrChatDoesNotExist
+		}
+
+		log.Err(err).Msg("Failed to find chat by id")
+		return Chat{}, err
+	}
+
+	return chat, nil
+}
+
 func findChatsByUserId(ctx context.Context, tx pgx.Tx, userId ulid.ULID) (chats []*ChatViewModel, err error) {
 	q := `
   SELECT cs.*, (CASE WHEN cm.created_at IS NULL THEN cs.created_at ELSE cm.created_at END) "last_msg_time"
