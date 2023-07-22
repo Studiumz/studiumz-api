@@ -7,6 +7,7 @@ import (
 
 	"github.com/Studiumz/studiumz-api/app"
 	"github.com/Studiumz/studiumz-api/app/auth"
+	"github.com/go-chi/chi/v5"
 )
 
 func getIncoming(w http.ResponseWriter, r *http.Request) {
@@ -53,7 +54,7 @@ func newMatch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	matcheeId := r.URL.Query().Get("matchee_id")
+	matcheeId := chi.URLParam(r, "matchee_id")
 	err = createNewMatch(matcheeId, body, user)
 	if err != nil {
 		app.WriteHttpError(w, http.StatusInternalServerError, ErrFailToUpdateMatch)
@@ -68,7 +69,7 @@ func newSkip(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	matcheeId := r.URL.Query().Get("matchee_id")
+	matcheeId := chi.URLParam(r, "matchee_id")
 	err := createNewSkip(matcheeId, user)
 	if err != nil {
 		app.WriteHttpError(w, http.StatusInternalServerError, ErrFailToUpdateMatch)
@@ -83,7 +84,7 @@ func acceptIncoming(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	matchId := r.URL.Query().Get("match_id")
+	matchId := chi.URLParam(r, "match_id")
 	m, err := GetMatchById(matchId)
 	if err != nil {
 		app.WriteHttpError(w, http.StatusBadRequest, ErrMatchNotFound)
@@ -107,7 +108,7 @@ func rejectIncoming(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	matchId := r.URL.Query().Get("match_id")
+	matchId := chi.URLParam(r, "match_id")
 	m, err := GetMatchById(matchId)
 	if err != nil {
 		app.WriteHttpError(w, http.StatusBadRequest, ErrMatchNotFound)
@@ -131,7 +132,7 @@ func withdrawOutgoing(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	matchId := r.URL.Query().Get("match_id")
+	matchId := chi.URLParam(r, "match_id")
 	m, err := GetMatchById(matchId)
 	if err != nil {
 		app.WriteHttpError(w, http.StatusBadRequest, ErrMatchNotFound)

@@ -84,7 +84,7 @@ func softDeleteMatch(ctx context.Context, tx pgx.Tx, id ulid.ULID) (err error) {
 func findUserIncomingMatches(ctx context.Context, tx pgx.Tx, userId ulid.ULID) (matches []Match, err error) {
 	q := "SELECT * FROM matches WHERE matchee_id = $1 AND deleted_at IS NULL AND status != 'SKIPPED';"
 
-	if err = pgxscan.Get(ctx, tx, &matches, q, userId); err != nil {
+	if err = pgxscan.Select(ctx, tx, &matches, q, userId); err != nil {
 		if err.Error() == "scanning one: no rows in result set" {
 			return []Match{}, nil
 		}
@@ -99,7 +99,7 @@ func findUserIncomingMatches(ctx context.Context, tx pgx.Tx, userId ulid.ULID) (
 func findUserOutgoingMatches(ctx context.Context, tx pgx.Tx, userId ulid.ULID) (matches []Match, err error) {
 	q := "SELECT * FROM matches WHERE matchee_id = $1 AND deleted_at IS NULL AND status != 'SKIPPED';"
 
-	if err = pgxscan.Get(ctx, tx, &matches, q, userId); err != nil {
+	if err = pgxscan.Select(ctx, tx, &matches, q, userId); err != nil {
 		if err.Error() == "scanning one: no rows in result set" {
 			return []Match{}, nil
 		}
