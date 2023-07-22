@@ -6,12 +6,14 @@ import (
 
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/oklog/ulid/v2"
 	"github.com/rs/zerolog/log"
 )
 
 var (
-	ErrChatDoesNotExist = errors.New("Chat does not exist")
+	ErrChatDoesNotExist  = errors.New("Chat does not exist")
+	ErrChatAlreadyExists = errors.New("Chat already exists")
 )
 
 func findChatByUserIds(ctx context.Context, tx pgx.Tx, firstUserId, secondUserId ulid.ULID) (chat Chat, err error) {
@@ -37,8 +39,6 @@ func saveChat(ctx context.Context, tx pgx.Tx, chat Chat) (newChat Chat, err erro
 	q := `
   INSERT INTO chats (id, first_user_id, second_user_id, created_at) VALUES
   ($1, $2, $3, $4)
-  ON CONFLICT ON CONSTRAINT chats_user_ids_unique
-  DO NOTHING
   RETURNING *
   `
 	if err = pgxscan.Get(
@@ -51,14 +51,18 @@ func saveChat(ctx context.Context, tx pgx.Tx, chat Chat) (newChat Chat, err erro
 		chat.SecondUserId,
 		chat.CreatedAt,
 	); err != nil {
-		if err.Error() == "scanning one: no rows in result set" {
-			newChat, err = findChatByUserIds(ctx, tx, chat.FirstUserId, chat.SecondUserId)
-			if err != nil {
-				return
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == "23505" {
+				return newChat, ErrChatAlreadyExists
 			}
 
-			return newChat, nil
+			log.Err(err).Msg("Failed to save chat")
+			return newChat, err
 		}
+
+		log.Err(err).Msg("Failed to save chat")
+		return
 	}
 
 	return newChat, nil

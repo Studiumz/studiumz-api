@@ -10,5 +10,7 @@ func Router() *chi.Mux {
 
 	r.Use(auth.UserAuthMiddleware)
 
+  r.Post("/create", createChatHandler)
+
 	return r
 }

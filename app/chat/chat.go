@@ -22,7 +22,7 @@ func NewChat(firstUserIdStr, secondUserIdStr string) (Chat, map[string]error) {
 	if err != nil {
 		errs["first_user_id"] = err
 	}
-	secondUserId, err := validateChatUserId(firstUserIdStr)
+	secondUserId, err := validateChatUserId(secondUserIdStr)
 	if err != nil {
 		errs["second_user_id"] = err
 	}
