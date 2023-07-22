@@ -32,7 +32,7 @@ func ConfigureLogger(c Config) {
 	stdlog.SetOutput(stdMw)
 
 	// Zerolog config
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	zerolog.TimeFieldFormat = time.RFC3339
 	zerolog.MessageFieldName = "msg"
 
