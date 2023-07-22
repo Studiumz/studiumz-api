@@ -14,5 +14,5 @@ type Match struct {
 	Status            MatchStatus `json:"match_status"`
 	InvitationMessage null.String `json:"invitation_message"`
 	CreatedAt         time.Time   `json:"created_at"`
-	DeletedAt         time.Time   `json:"deleted_at"`
+	DeletedAt         null.Time   `json:"deleted_at"`
 }
