@@ -24,6 +24,9 @@ var (
 	ErrFirebaseAdminServiceAccountFileEmpty = errors.New("Firebase admin service account file can't be empty")
 	ErrJwtIssuerEmpty                       = errors.New("JWT issuer can't be empty")
 	ErrJWTAccessTokenSecretEmpty            = errors.New("JWT access token secret can't be empty")
+	errSubjectNotFound                      = errors.New("match not found")
+	errFailToUpdateSubject                  = errors.New("could not update existing subject")
+	errNoRowsAffected                       = errors.New("no subjects affected")
 )
 
 func SetEnv(environment string) {
