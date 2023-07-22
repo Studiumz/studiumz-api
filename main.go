@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/Studiumz/studiumz-api/app"
+	"github.com/Studiumz/studiumz-api/app/recommendation"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog/log"
@@ -15,6 +16,9 @@ func main() {
 	// App Configurations
 	app.ConfigureLogger(c)
 	app.ConfigureCors(c)
+	co := app.ConfigureCohere(c)
+
+	recommendation.InjectCohereClientAdapter(co)
 
 	r := chi.NewRouter()
 
