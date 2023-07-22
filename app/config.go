@@ -15,6 +15,9 @@ type Config struct {
 
 	FirebaseAdminServiceAccountFile string `mapstructure:"FIREBASE_ADMIN_SERVICE_ACCOUNT_FILE"`
 
+	StudiumzJwtIssuer            string `mapstructure:"STUDIUMZ_JWT_ISSUER"`
+	StudiumzJwtAccessTokenSecret string `mapstructure:"STUDIUMZ_JWT_ACCESS_TOKEN_SECRET"`
+
 	DbHost string `mapstructure:"DB_HOST"`
 	DbPort string `mapstructure:"DB_PORT"`
 	DbName string `mapstructure:"DB_NAME"`
