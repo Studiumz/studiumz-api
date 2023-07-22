@@ -5,6 +5,7 @@ import (
 
 	"github.com/Studiumz/studiumz-api/app/auth"
 	"github.com/oklog/ulid/v2"
+	"github.com/rs/zerolog/log"
 	"gopkg.in/guregu/null.v4"
 )
 
@@ -12,9 +13,18 @@ func GetMatchById(matchId string) (match Match, err error) {
 	ctx := context.Background()
 	tx, err := pool.Begin(ctx)
 	if err != nil {
+		log.Err(err).Msg("Failed to get match by id")
 		return
 	}
-	return findValidMatchById(ctx, tx, ulid.MustParse(matchId))
+
+	defer tx.Rollback(ctx)
+
+	match, err = findValidMatchById(ctx, tx, ulid.MustParse(matchId))
+	if err = tx.Commit(ctx); err != nil {
+		log.Err(err).Msg("Failed to get match by id")
+		return
+	}
+	return match, nil
 }
 
 func createNewMatch(matcheeId string, body CreateMatchReq, user auth.User) (err error) {
@@ -24,6 +34,8 @@ func createNewMatch(matcheeId string, body CreateMatchReq, user auth.User) (err 
 		return
 	}
 
+	defer tx.Rollback(ctx)
+
 	m := Match{
 		Id:                ulid.Make(),
 		MatcherId:         user.Id,
@@ -31,7 +43,17 @@ func createNewMatch(matcheeId string, body CreateMatchReq, user auth.User) (err 
 		Status:            MatchStatus(PENDING),
 		InvitationMessage: body.InvitationMessage,
 	}
-	return saveNewMatchOrSkip(ctx, tx, m)
+	err = saveNewMatchOrSkip(ctx, tx, m)
+	if err != nil {
+		log.Err(err).Msg("Failed to create match")
+		return
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		log.Err(err).Msg("Failed to create match")
+		return
+	}
+	return nil
 }
 
 func createNewSkip(matcheeId string, user auth.User) (err error) {
@@ -41,6 +63,8 @@ func createNewSkip(matcheeId string, user auth.User) (err error) {
 		return
 	}
 
+	defer tx.Rollback(ctx)
+
 	m := Match{
 		Id:                ulid.Make(),
 		MatcherId:         user.Id,
@@ -48,7 +72,17 @@ func createNewSkip(matcheeId string, user auth.User) (err error) {
 		Status:            MatchStatus(SKIPPED),
 		InvitationMessage: null.String{},
 	}
-	return saveNewMatchOrSkip(ctx, tx, m)
+
+	if err = saveNewMatchOrSkip(ctx, tx, m); err != nil {
+		log.Err(err).Msg("Failed to create new skipped match")
+		return
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		log.Err(err).Msg("Failed to create new skipped match")
+		return
+	}
+	return nil
 }
 
 func acceptMatch(m Match) (err error) {
@@ -57,7 +91,19 @@ func acceptMatch(m Match) (err error) {
 	if err != nil {
 		return
 	}
-	return updateMatchStatus(ctx, tx, MatchStatus(ACCEPTED), m.Id)
+
+	defer tx.Rollback(ctx)
+
+	if err = updateMatchStatus(ctx, tx, MatchStatus(ACCEPTED), m.Id); err != nil {
+		log.Err(err).Msg("Failed to update match status to accepted")
+		return
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		log.Err(err).Msg("Failed to update match status to accepted")
+		return
+	}
+	return nil
 }
 
 func rejectMatch(m Match) (err error) {
@@ -66,7 +112,18 @@ func rejectMatch(m Match) (err error) {
 	if err != nil {
 		return
 	}
-	return updateMatchStatus(ctx, tx, MatchStatus(REJECTED), m.Id)
+
+	defer tx.Rollback(ctx)
+
+	if err = updateMatchStatus(ctx, tx, MatchStatus(REJECTED), m.Id); err != nil {
+		log.Err(err).Msg("Failed to update match status to rejected")
+		return
+	}
+	if err = tx.Commit(ctx); err != nil {
+		log.Err(err).Msg("Failed to update match status to rejected")
+		return
+	}
+	return nil
 }
 
 func withdrawMatch(m Match) (err error) {
@@ -75,7 +132,18 @@ func withdrawMatch(m Match) (err error) {
 	if err != nil {
 		return
 	}
-	return softDeleteMatch(ctx, tx, m.Id)
+
+	defer tx.Rollback(ctx)
+
+	if err = softDeleteMatch(ctx, tx, m.Id); err != nil {
+		log.Err(err).Msg("Failed to soft-delete match (withdraw)")
+		return
+	}
+	if err = tx.Commit(ctx); err != nil {
+		log.Err(err).Msg("Failed to soft-delete match (withdraw)")
+		return
+	}
+	return nil
 }
 
 func getUserIncoming(userId ulid.ULID) (matches []Match, err error) {
@@ -84,7 +152,20 @@ func getUserIncoming(userId ulid.ULID) (matches []Match, err error) {
 	if err != nil {
 		return
 	}
-	return findUserIncomingMatches(ctx, tx, userId)
+
+	defer tx.Rollback(ctx)
+
+	matches, err = findUserIncomingMatches(ctx, tx, userId)
+	if err != nil {
+		log.Err(err).Msg("Failed to get user incoming matches")
+		return
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		log.Err(err).Msg("Failed to get user incoming matches")
+		return
+	}
+	return matches, nil
 }
 
 func getUserOutgoing(userId ulid.ULID) (matches []Match, err error) {
@@ -93,5 +174,18 @@ func getUserOutgoing(userId ulid.ULID) (matches []Match, err error) {
 	if err != nil {
 		return
 	}
-	return findUserOutgoingMatches(ctx, tx, userId)
+
+	defer tx.Rollback(ctx)
+
+	matches, err = findUserOutgoingMatches(ctx, tx, userId)
+	if err != nil {
+		log.Err(err).Msg("Failed to update get user outgoing matches")
+		return
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		log.Err(err).Msg("Failed to update get user outgoing matches")
+		return
+	}
+	return matches, nil
 }
