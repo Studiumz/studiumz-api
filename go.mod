@@ -4,12 +4,15 @@ go 1.20
 
 require (
 	firebase.google.com/go v3.13.0+incompatible
+	github.com/georgysavva/scany/v2 v2.0.0
 	github.com/go-chi/chi/v5 v5.0.10
 	github.com/jackc/pgx/v5 v5.4.2
+	github.com/jellydator/validation v1.1.0
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/rs/cors v1.9.0
 	github.com/rs/zerolog v1.29.1
 	github.com/spf13/viper v1.16.0
+	gonum.org/v1/gonum v0.13.0
 	google.golang.org/api v0.132.0
 	gopkg.in/guregu/null.v4 v4.0.0
 )
@@ -22,6 +25,7 @@ require (
 	cloud.google.com/go/iam v1.1.1 // indirect
 	cloud.google.com/go/longrunning v0.5.1 // indirect
 	cloud.google.com/go/storage v1.31.0 // indirect
+	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
 	github.com/cohere-ai/tokenizer v1.1.1 // indirect
 	github.com/dlclark/regexp2 v1.4.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
@@ -65,7 +69,6 @@ require (
 	github.com/subosito/gotenv v1.4.2 // indirect
 	golang.org/x/sys v0.10.0 // indirect
 	golang.org/x/text v0.11.0 // indirect
-	gonum.org/v1/gonum v0.13.0
 	google.golang.org/genproto v0.0.0-20230720185612-659f7aaaa771 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
