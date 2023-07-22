@@ -13,6 +13,8 @@ type Config struct {
 
 	ClientAppUrl string `mapstructure:"CLIENT_APP_URL"`
 
+	FirebaseAdminServiceAccountFile string `mapstructure:"FIREBASE_ADMIN_SERVICE_ACCOUNT_FILE"`
+
 	DbHost string `mapstructure:"DB_HOST"`
 	DbPort string `mapstructure:"DB_PORT"`
 	DbName string `mapstructure:"DB_NAME"`

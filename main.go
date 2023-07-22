@@ -22,6 +22,7 @@ func main() {
 	pool := db.CreateConnPool(c.DbDsn)
 
 	auth.SetPool(pool)
+	auth.ConfigureFirebaseAdminSdk(c.FirebaseAdminServiceAccountFile)
 
 	r := chi.NewRouter()
 
